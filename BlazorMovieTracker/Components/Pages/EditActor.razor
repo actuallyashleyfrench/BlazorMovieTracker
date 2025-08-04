@@ -1,0 +1,138 @@
+﻿@page "/edit-actor/{Id:int}"
+@inject BlazorMovieTracker.Services.MovieService MovieService
+@inject BlazorMovieTracker.Services.ActorService ActorService
+@inject NavigationManager Nav
+@using BlazorMovieTracker.Models
+@rendermode InteractiveServer
+
+<PageTitle>Edit Actor</PageTitle>
+
+<h3 class="mt-4 mb-3">✏️ Edit Actor</h3>
+
+@if (actor == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <!-- Edit form for updating actor details -->
+    <EditForm Model="actor" OnValidSubmit="HandleValidSubmit" FormName="EditActorForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row">
+            <div class="col-md-8">
+
+                <!-- Actor info inputs -->
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <InputText class="form-control" @bind-Value="actor.Name" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Date of Birth</label>
+                    <InputDate class="form-control" @bind-Value="actor.DateOfBirth" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Biography</label>
+                    <InputTextArea class="form-control" @bind-Value="actor.Biography" Rows="6" />
+                </div>
+
+                <!-- Movie selection checkboxes -->
+                <div class="col-md-4">
+                    <label class="form-label">Select Movies</label>
+                    <div>
+                        @foreach (var movie in allMovies)
+                        {
+                            var checkboxId = $"movie-{movie.Id}";
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="@checkboxId"
+                                    checked="@selectedMovieIds.Contains(movie.Id)"
+                                    @onchange="(ChangeEventArgs e) => OnMovieCheckboxChanged(movie.Id, (bool)e.Value)" />
+                                <label class="form-check-label" for="@checkboxId">@movie.Title</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form action buttons -->
+        <button type="submit" class="btn btn-primary mt-3">Update Actor</button>
+        <button class="btn btn-danger ms-2 mt-3" @onclick="DeleteActor">Delete</button>
+        <a href="/actors" class="btn btn-secondary ms-2 mt-3">Cancel</a>
+
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Actor? actor;
+    private List<Movie> allMovies = new();
+    private List<int> selectedMovieIds = new();
+
+    // Load actor data and movie list
+    // Pre-fill checkboxes with current movies
+    protected override async Task OnInitializedAsync()
+    {
+        actor = await ActorService.GetByIdAsync(Id);
+        allMovies = await MovieService.GetAllAsync();
+
+        if (actor?.Movies?.Any() == true)
+        {
+            selectedMovieIds = actor.Movies.Select(m => m.Id).ToList();
+        }
+        else
+        {
+            selectedMovieIds = new List<int>();
+        }
+
+    }
+
+    // Update selected movies when checkboxes are toggled
+    private void OnMovieCheckboxChanged(int movieId, bool? isChecked)
+    {
+        if (isChecked == true)
+        {
+            if (!selectedMovieIds.Contains(movieId))
+                selectedMovieIds.Add(movieId);
+        }
+        else
+        {
+            selectedMovieIds.Remove(movieId);
+        }
+    }
+
+    // Save actor changes and navigate back to actor list
+    private async Task HandleValidSubmit(EditContext args)
+    {
+        var selectedMovies = allMovies
+            .Where(m => selectedMovieIds.Contains(m.Id))
+            .ToList();
+
+        var updatedActor = new Actor
+            {
+                Id = actor!.Id,
+                Name = actor.Name,
+                DateOfBirth = actor.DateOfBirth,
+                Biography = actor.Biography,
+                Movies = selectedMovies
+            };
+
+        await ActorService.UpdateAsync(updatedActor);
+        Nav.NavigateTo("/actors");
+    }
+
+    // Delete current actor and return to actor list
+    private async Task DeleteActor(MouseEventArgs args)
+    {
+        if (actor != null)
+        {
+            await ActorService.DeleteAsync(actor.Id);
+            Nav.NavigateTo("/actors");
+        }
+    }
+}

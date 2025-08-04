@@ -1,0 +1,88 @@
+﻿@page "/add-actor"
+@inject BlazorMovieTracker.Services.MovieService MovieService
+@inject BlazorMovieTracker.Services.ActorService ActorService
+@using BlazorMovieTracker.Models
+@rendermode InteractiveServer
+@inject NavigationManager Nav
+
+<PageTitle>Add New Actor</PageTitle>
+
+<div class="container mt-4">
+    <h3>Add Actor</h3>
+
+    <!-- Form for adding a new actor -->
+     <EditForm Model="newActor" OnValidSubmit="HandleValidSubmit" FormName="AddActorForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <!-- Actor fields -->
+        <div class="mb-3">
+            <label class="form-label">Name</label>
+            <InputText class="form-control w-50" @bind-Value="newActor.Name" />
+            <label class="form-label">Date of Birth</label>
+            <InputDate class="form-control w-25" @bind-Value="newActor.DateOfBirth" />
+            <label class="form-label">Biography</label>
+            <InputTextArea class="form-control" @bind-Value="newActor.Biography" Rows="4" />
+
+        </div>
+
+        <!-- Movie selection -->
+        <label class="form-label">Select Movies</label>
+        <div>
+            @foreach (var movie in allMovies)
+            {
+                var checkboxId = $"movie-{movie.Id}";
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="@checkboxId"
+                        @onchange="e => OnMovieCheckboxChanged(movie.Id, e.Value as bool?)"
+                        checked="@selectedMovieIds.Contains(movie.Id)" />
+                    <label class="form-check-label" for="@checkboxId">@movie.Title</label>
+                </div>
+            }
+        </div>
+
+        <!-- Form action buttons -->
+        <button type="submit" class="btn btn-secondary">Save Actor</button>
+        <a  class="btn btn-secondary ms-2" href="/actors">Cancel</a>
+     </EditForm>
+        
+</div>
+
+
+@code {
+    private Actor newActor = new();
+    private List<Movie> allMovies = new();
+    private List<int> selectedMovieIds = new();
+
+    // Load all movies
+    protected override async Task OnInitializedAsync()
+    {
+        allMovies = await MovieService.GetAllAsync();
+    }
+
+    // Update selected movies when checkboxes are toggled
+    private void OnMovieCheckboxChanged(int movieId, bool? isChecked)
+    {
+        if (isChecked == true)
+        {
+            if (!selectedMovieIds.Contains(movieId))
+                selectedMovieIds.Add(movieId);
+        }
+        else
+        {
+            selectedMovieIds.Remove(movieId);
+        }
+    }
+
+    // Submit the new actor with selected movies
+    // Return to actor list page
+    private async Task HandleValidSubmit(EditContext args)
+    {
+        newActor.Movies = allMovies
+            .Where(m => selectedMovieIds.Contains(m.Id))
+            .ToList();
+
+            await ActorService.AddAsync(newActor);
+            Nav.NavigateTo("/actors");
+    }
+}

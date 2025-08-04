@@ -1,0 +1,75 @@
+﻿@page "/movie-details/{Id:int}"
+@inject BlazorMovieTracker.Services.MovieService MovieService
+@using BlazorMovieTracker.Models
+
+<!-- Set dynamic page title based on the movie title -->
+<PageTitle>@movie?.Title Movie Details</PageTitle>
+
+<div class="container mt-4">
+    <h3>Details</h3>
+
+    @if (movie == null)
+    {
+        <!-- Show loading message until movie data is loaded -->
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <div class="card mt-4">
+            <div class="card-body">
+                <!-- Display movie information -->
+                <h2 class="card-title">@movie.Title</h2>
+
+                <h5 class="text-muted">@movie.Genre</h5>
+
+                <p class="mt-3"><strong>Director:</strong> @movie.Director</p>
+
+                <p><strong>Year:</strong> @movie.ReleaseYear</p>
+
+                <p><strong>Watched:</strong> 
+                    @(movie.Watched ? "✅ Watched" : "❌ Not watched")</p>
+
+                <p><strong>Description:</strong>
+                    @if (!string.IsNullOrEmpty(movie.Description))
+                    {
+                        @movie.Description
+                    }
+                    else
+                    {
+                        <em> No description</em>
+                    }
+                </p>
+
+                <p><strong>Cast:</strong></p>
+                @if (movie.Actors != null && movie.Actors.Any())
+                {
+                    <ul>
+                        @foreach (var actor in movie.Actors)
+                        {
+                            <li>@actor.Name</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <em>No actors listed</em><br />
+                }
+
+                <!-- Link back to the main movie list -->
+                <a class="btn btn-secondary mt-3" href="/">← Back to List</a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Movie? movie;
+
+    protected override async Task OnInitializedAsync()
+    {
+        movie = await MovieService.GetByIdAsync(Id);
+    }
+}

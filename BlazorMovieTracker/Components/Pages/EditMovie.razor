@@ -1,0 +1,158 @@
+﻿@page "/edit-movie/{Id:int}"
+@inject BlazorMovieTracker.Services.MovieService MovieService
+@inject BlazorMovieTracker.Services.ActorService ActorService
+@inject NavigationManager Nav
+@using BlazorMovieTracker.Models
+@rendermode InteractiveServer
+
+<PageTitle>Edit Movie</PageTitle>
+
+<h3 class="mt-4 mb-3">✏️ Edit Movie</h3>
+
+@if (movie == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <!-- Movie edit form -->
+    <EditForm Model="movie" OnValidSubmit="HandleValidSubmit" FormName="EditMovieForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="mb-3">
+
+                    <!-- Movie details section -->
+                    <label class="form-label">Title</label>
+                    <InputText class="form-control" @bind-Value="movie.Title" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Genre</label>
+                    <InputText class="form-control" @bind-Value="movie.Genre" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Director</label>
+                    <InputText class="form-control" @bind-Value="movie.Director" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Release Year</label>
+                    <InputNumber class="form-control" @bind-Value="movie.ReleaseYear" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <InputTextArea class="form-control" @bind-Value="movie.Description" Rows="4" />
+
+                </div>
+
+                <div class="form-check mb-3">
+                    <InputCheckbox class="form-check-input" @bind-Value="movie.Watched" id="watchedId" />
+                    <label class="form-check-label ms-2" for="watchedId">Watched</label>
+                </div>
+            </div>
+
+            <!-- Cast selection section -->
+            <div class="col-md-4">
+                <label class="form-label">Select Cast</label>
+                <div>
+                    @foreach (var actor in allActors)
+                    {
+                        var checkboxId = $"actor-{actor.Id}";
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="@checkboxId"
+                                   checked="@selectedActorIds.Contains(actor.Id)"
+                                   @onchange="(ChangeEventArgs e) => OnActorCheckboxChanged(actor.Id, (bool)e.Value)" />
+
+                            <label class="form-check-label" for="@checkboxId">@actor.Name</label>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Form action buttons -->
+        <button type="submit" class="btn btn-primary mt-3">Update Movie</button>
+        <button class="btn btn-danger ms-2 mt-3" @onclick="DeleteMovie">Delete</button>
+        <a href="/" class="btn btn-secondary ms-2 mt-3">Cancel</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Movie? movie;
+    private List<Actor> allActors = new();
+    private List<int> selectedActorIds = new();
+
+    
+    // Load movie data and actor list
+    // Pre-fill checkboxes with current cast
+    protected override async Task OnInitializedAsync()
+    {
+        movie = await MovieService.GetByIdAsync(Id);
+        allActors = await ActorService.GetAllAsync();
+
+        if (movie?.Actors?.Any() == true)
+        {
+            selectedActorIds = movie.Actors.Select(a => a.Id).ToList();
+        }
+        else
+        {
+            selectedActorIds = new List<int>();
+        }
+        Console.WriteLine($"Selected Actor IDs: {string.Join(", ", selectedActorIds)}");
+    }
+
+    // Update selected actors when checkboxes are toggled
+    private void OnActorCheckboxChanged(int actorId, bool? isChecked)
+    {
+        if (isChecked == true)
+        {
+            if (!selectedActorIds.Contains(actorId))
+                selectedActorIds.Add(actorId);
+        }
+        else
+        {
+            selectedActorIds.Remove(actorId);
+        }
+    }
+
+    // Save movie changes and navigate back to movie list
+    private async Task HandleValidSubmit()
+    {
+        var selectedActors = allActors
+            .Where(a => selectedActorIds.Contains(a.Id))
+            .ToList();
+
+        var updatedMovie = new Movie
+        {
+            Id = movie!.Id,
+            Title = movie.Title,
+            Genre = movie.Genre,
+            Director = movie.Director,
+            ReleaseYear = movie.ReleaseYear,
+            Description = movie.Description,
+            Watched = movie.Watched,
+            Actors = selectedActors
+        };
+
+        await MovieService.UpdateAsync(updatedMovie);
+        Nav.NavigateTo("/");
+    }
+
+    // Delete current movie and return to movie list
+    private async Task DeleteMovie()
+    {
+        if (movie != null)
+        {
+            await MovieService.DeleteAsync(movie.Id);
+            Nav.NavigateTo("/");
+        }
+    }
+}

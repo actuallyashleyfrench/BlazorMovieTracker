@@ -1,0 +1,113 @@
+﻿@page "/add-movie"
+@inject BlazorMovieTracker.Services.MovieService MovieService
+@inject BlazorMovieTracker.Services.ActorService ActorService
+@using BlazorMovieTracker.Models
+@rendermode InteractiveServer
+@inject NavigationManager Nav
+
+<PageTitle>Add New Movie</PageTitle>
+
+<div class="container mt-4">
+    <h3>Add Movie</h3>
+
+    <!-- Form for adding a new movie -->
+    <EditForm Model="newMovie" OnValidSubmit="HandleValidSubmit" FormName="AddMovieForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row">
+            <!-- Left column: Movie fields -->
+            <div class="col-md-8">
+                <div class="mb-3">
+                    <label class="form-label">Title</label>
+                    <InputText class="form-control w-50" @bind-Value="newMovie.Title" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Genre</label>
+                    <InputText class="form-control w-50" @bind-Value="newMovie.Genre" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Director</label>
+                    <InputText class="form-control w-50" @bind-Value="newMovie.Director" />
+                </div>
+
+
+                <div class="mb-3">
+                    <label class="form-label">Release Year</label>
+                    <InputNumber class="form-control w-25" @bind-Value="newMovie.ReleaseYear" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description</label>
+                    <InputTextArea class="form-control" @bind-Value="newMovie.Description" Rows="4" />
+                </div>
+
+                <div class="form-check mb-3">
+                    <InputCheckbox class="form-check-input" @bind-Value="newMovie.Watched" id="watchedId"/>
+                    <label class="form-check-label ms-2" for="watchedId">Watched</label>
+                </div>
+            </div>
+        
+
+        <!-- Right column: Cast selection -->
+            <div class="col-md-4">
+                <label class="form-label">Select Cast</label>
+                <div>
+                    @foreach (var actor in allActors)
+                    {
+                        var checkboxId = $"actor-{actor.Id}";
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="@checkboxId"
+                                @onchange="e => OnActorCheckboxChanged(actor.Id, e.Value as bool?)"
+                                checked="@selectedActorIds.Contains(actor.Id)" />
+                            <label class="form-check-label" for="@checkboxId">@actor.Name</label>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Save Movie</button>
+        <a class="btn btn-secondary ms-2" href="/">Cancel</a>
+    </EditForm>
+</div> 
+
+@code {
+    private Movie newMovie = new();
+    private List<Actor> allActors = new();
+    private List<int> selectedActorIds = new();
+
+    // Load all actors
+    protected override async Task OnInitializedAsync()
+    {
+        allActors = await ActorService.GetAllAsync();
+    }
+
+    // Update selected actors when checkboxes are toggled
+    private void OnActorCheckboxChanged(int actorId, bool? isChecked)
+    {
+        if (isChecked == true)
+        {
+            if (!selectedActorIds.Contains(actorId))
+                selectedActorIds.Add(actorId);
+        }
+        else
+        {
+            selectedActorIds.Remove(actorId);
+        }
+    }
+
+    // Submit the new movie with selected actors
+    // Return to movie list page
+    private async Task HandleValidSubmit()
+    {
+        newMovie.Actors = allActors
+            .Where(a => selectedActorIds.Contains(a.Id))
+            .ToList();
+
+        await MovieService.AddAsync(newMovie);
+        Nav.NavigateTo("/");
+    }
+}

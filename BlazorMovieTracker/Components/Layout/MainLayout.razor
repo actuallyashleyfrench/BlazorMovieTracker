@@ -1,0 +1,27 @@
+﻿@inherits LayoutComponentBase
+
+<div class="d-flex">
+    <!-- Sidebar -->
+    <div class="sidebar text-dark p-3" style="min-height: 100vh; width: 220px;">
+        <h5 class="mb-4">🎥 Movie Tracker</h5>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <NavLink href="/" class="nav-link" activeClass="fw-bold" Match="NavLinkMatch.All">Movies</NavLink>
+            </li>
+            <li class="nav-item">
+                <NavLink href="/actors" class="nav-link" activeClass="fw-bold">Actors</NavLink>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main content -->
+    <div class="content flex-grow-1">
+        @Body
+    </div>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
