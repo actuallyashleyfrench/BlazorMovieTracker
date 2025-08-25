@@ -1,4 +1,4 @@
-﻿@page "/add-movie"
+﻿@page "/movies/create"
 @inject BlazorMovieTracker.Services.MovieService MovieService
 @inject BlazorMovieTracker.Services.ActorService ActorService
 @using BlazorMovieTracker.Models
@@ -70,7 +70,7 @@
         </div>
 
         <button type="submit" class="btn btn-success">Save Movie</button>
-        <a class="btn btn-secondary ms-2" href="/">Cancel</a>
+        <a class="btn btn-secondary ms-2" href="/movies">Cancel</a>
     </EditForm>
 </div> 
 
@@ -108,6 +108,6 @@
             .ToList();
 
         await MovieService.AddAsync(newMovie);
-        Nav.NavigateTo("/");
+        Nav.NavigateTo("/movies");
     }
 }

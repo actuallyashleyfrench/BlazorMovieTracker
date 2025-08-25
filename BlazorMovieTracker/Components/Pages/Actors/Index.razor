@@ -11,7 +11,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-end mb-3">
         <input @bind="searchTerm" @bind:event="oninput" placeholder="Search actor..." class="form-control w-50 me-3" />
-        <a class="btn btn-primary" href="/add-actor">+ Add Actor</a>
+        <a class="btn btn-primary" href="/actors/create">+ Add Actor</a>
     </div>
     @if (filteredActors == null)
     {
@@ -55,7 +55,7 @@
                                 }
                             </td>
                             <td>
-                                <a href="/edit-actor/@actor.Id" class="btn btn-sm btn-secondary me-2" @onclick:stopPropagation>✏️Edit</a>
+                                <a href="/actors/edit/@actor.Id" class="btn btn-sm btn-secondary me-2" @onclick:stopPropagation>✏️Edit</a>
                             </td>
                         </tr>
                     }
@@ -108,6 +108,6 @@
     // Navigate to actor details page
     void NavigateToDetails(int id)
     {
-        Nav.NavigateTo($"/actor-details/{id}");
+        Nav.NavigateTo($"/actors/details/{id}");
     }
 }

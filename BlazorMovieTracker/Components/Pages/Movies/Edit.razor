@@ -1,4 +1,4 @@
-﻿@page "/edit-movie/{Id:int}"
+﻿@page "/movies/edit/{Id:int}"
 @inject BlazorMovieTracker.Services.MovieService MovieService
 @inject BlazorMovieTracker.Services.ActorService ActorService
 @inject NavigationManager Nav
@@ -78,7 +78,7 @@ else
         <!-- Form action buttons -->
         <button type="submit" class="btn btn-primary mt-3">Update Movie</button>
         <button class="btn btn-danger ms-2 mt-3" @onclick="DeleteMovie">Delete</button>
-        <a href="/" class="btn btn-secondary ms-2 mt-3">Cancel</a>
+        <a href="/movies" class="btn btn-secondary ms-2 mt-3">Cancel</a>
     </EditForm>
 }
 
@@ -143,7 +143,7 @@ else
         };
 
         await MovieService.UpdateAsync(updatedMovie);
-        Nav.NavigateTo("/");
+        Nav.NavigateTo("/movies");
     }
 
     // Delete current movie and return to movie list
@@ -152,7 +152,7 @@ else
         if (movie != null)
         {
             await MovieService.DeleteAsync(movie.Id);
-            Nav.NavigateTo("/");
+            Nav.NavigateTo("/movies");
         }
     }
 }

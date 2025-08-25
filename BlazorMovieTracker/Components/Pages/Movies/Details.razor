@@ -1,4 +1,4 @@
-﻿@page "/movie-details/{Id:int}"
+﻿@page "/movies/details/{Id:int}"
 @inject BlazorMovieTracker.Services.MovieService MovieService
 @using BlazorMovieTracker.Models
 
@@ -56,7 +56,7 @@
                 }
 
                 <!-- Link back to the main movie list -->
-                <a class="btn btn-secondary mt-3" href="/">← Back to List</a>
+                <a class="btn btn-secondary mt-3" href="/movies">← Back to List</a>
             </div>
         </div>
     }

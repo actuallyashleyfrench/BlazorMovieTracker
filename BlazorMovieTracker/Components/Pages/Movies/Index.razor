@@ -1,4 +1,5 @@
 ﻿@page "/"
+@page "/movies"
 @inject BlazorMovieTracker.Services.MovieService MovieService
 @inject NavigationManager Nav
 @using BlazorMovieTracker.Models
@@ -12,7 +13,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-end mb-3">
         <input @bind="searchTerm" @bind:event="oninput" placeholder="Search title..." class="form-control w-50 me-3" />
-        <a class="btn btn-primary" href="/add-movie">+ Add Movie</a>
+        <a class="btn btn-primary" href="/movies/create">+ Add Movie</a>
     </div>
 
 
@@ -55,7 +56,7 @@
                             <td>@movie.Genre</td>
                             <td>@(movie.Watched ? "✅" : "❌")</td>
                             <td>
-                                <a href="/edit-movie/@movie.Id" class="btn btn-sm btn-secondary me-2" @onclick:stopPropagation>✏️Edit</a>
+                                <a href="/movies/edit/@movie.Id" class="btn btn-sm btn-secondary me-2" @onclick:stopPropagation>✏️Edit</a>
                             </td>
                         </tr>
                     }
@@ -155,7 +156,7 @@
     // Navigate to movie details page
     void NavigateToDetails(int id)
     {
-        Nav.NavigateTo($"movie-details/{id}");
+        Nav.NavigateTo($"movies/details/{id}");
     }
 }
 
