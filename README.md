@@ -37,7 +37,7 @@ dotnet restore
 3. Configure the database connection
    - Open appsettings.json in the project.
    - Update the connection string to point to your local SQL Server or LocalDB instance.
-   Example:
+   - Example:
 ```json
 "ConnectionStrings": {
   "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=BlazorMovieTrackerDb;Trusted_Connection=True;MultipleActiveResultSets=true"
